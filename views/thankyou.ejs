@@ -1,0 +1,18 @@
+<%- include('header', { title: 'Thank You!' }) %>
+
+<div class="container form-container">
+    <h2 class="text-center mb-4">Thank you for joining the dKin Cap Membership!</h2>
+    <p class="text-center mb-4">Here’s the information you provided:</p>
+
+    <p><strong>First Name:</strong> <%= firstName %></p>
+    <p><strong>Surname:</strong> <%= surname %></p>
+    <p><strong>Email Address:</strong> <%= email %></p>
+    <p><strong>Mobile Number:</strong> <%= mobile %></p>
+    <p><strong>Number of Caps Owned:</strong> <%= capsOwned %></p>
+    <p><strong>Favorite Cap:</strong> <%= favoriteCaps %></p>
+    <p><strong>Comment about your Cap:</strong> <%= poem %></p>
+
+    <p>Thank you for your feedback!</p>
+</div>
+
+<%- include('footer') %>
