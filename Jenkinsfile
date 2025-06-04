@@ -54,13 +54,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying application...'
-                sh 'echo "Simulated deployment to staging environment complete."'
-            }
-        }
     }
 
     post {
