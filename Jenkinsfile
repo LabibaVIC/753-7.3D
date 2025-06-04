@@ -1,75 +1,66 @@
 pipeline {
     agent any
 
-    environment {
-        SONARQUBE_ENV = "SonarQube"
-        NODE_ENV = "development"
+    tools {
+        maven 'Maven 3.8.5' // Ensure this matches your Jenkins global tools config
+        jdk 'JDK 11'         // Or whatever version you’ve configured
     }
 
-    tools {
-        nodejs "NodeJS_18"
+    environment {
+        SONAR_SCANNER_HOME = tool 'SonarScanner' // Must be configured in Jenkins
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/LabibaVIC/753-7.3D.git'
+            }
+        }
+
         stage('Build') {
             steps {
-                echo '🔧 Building the application...'
-                sh 'npm install'
-                sh 'zip -r build-artifact.zip .'
-                archiveArtifacts artifacts: 'build-artifact.zip', fingerprint: true
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                echo '🧪 Running tests...'
-                sh 'npm test || echo "Tests failed (demo bypass)."'
-                // If you generate XML test results, add:
-                // junit 'test-results.xml'
+                sh 'mvn test'
+            }
+
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
 
         stage('Code Quality') {
             steps {
-                echo '📏 Running SonarQube for code quality...'
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'sonar-scanner'
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
                 }
             }
         }
 
         stage('Security') {
             steps {
-                echo '🔐 Performing security audit...'
-                sh 'npm audit --json > audit-report.json || true'
-                archiveArtifacts artifacts: 'audit-report.json', fingerprint: true
+                sh 'mvn org.owasp:dependency-check-maven:check'
             }
-        }
 
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying to staging (Docker)...'
-                sh 'docker build -t my-node-form:staging .'
-                sh 'docker run -d -p 3000:3000 --name node-app-staging my-node-form:staging || echo "Container may already exist"'
-            }
-        }
-
-        stage('Release') {
-            steps {
-                echo '🏁 Promoting to production...'
-                script {
-                    def tag = "release-${env.BUILD_NUMBER}"
-                    sh "git tag ${tag}"
-                    sh "git push origin ${tag}"
+            post {
+                always {
+                    archiveArtifacts artifacts: 'target/dependency-check-report.html', fingerprint: true
                 }
             }
         }
+    }
 
-        stage('Monitoring and Alerting') {
-            steps {
-                echo '📡 Sending heartbeat to monitoring system...'
-                sh 'curl -X POST http://monitoring-tool.local/heartbeat || echo "Monitoring failed or offline"'
-            }
+    post {
+        failure {
+            mail to: 'your@email.com',
+                 subject: "Build Failed in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Check console output at ${env.BUILD_URL}"
         }
     }
 }
