@@ -13,36 +13,44 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                dir('smart-waste') {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
+                dir('smart-waste') {
+                    sh 'mvn test'
+                }
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit 'smart-waste/target/surefire-reports/*.xml'
                 }
             }
         }
 
         stage('Code Quality') {
             steps {
-                withSonarQubeEnv('SonarQubeServer') {
-                    sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
+                dir('smart-waste') {
+                    withSonarQubeEnv('SonarQubeServer') {
+                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
+                    }
                 }
             }
         }
 
         stage('Security') {
             steps {
-                sh 'mvn org.owasp:dependency-check-maven:check'
+                dir('smart-waste') {
+                    sh 'mvn org.owasp:dependency-check-maven:check'
+                }
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'target/dependency-check-report.html', fingerprint: true
+                    archiveArtifacts artifacts: 'smart-waste/target/dependency-check-report.html', fingerprint: true
                 }
             }
         }
@@ -56,5 +64,4 @@ pipeline {
         }
     }
 }
-
 
