@@ -2,21 +2,15 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8.5' // Ensure this matches your Jenkins global tools config
-        jdk 'JDK 11'         // Or whatever version you’ve configured
+        maven 'Maven 3.8.5'
+        jdk 'JDK 11'
     }
 
     environment {
-        SONAR_SCANNER_HOME = tool 'SonarScanner' // Must be configured in Jenkins
+        SONAR_SCANNER_HOME = tool 'SonarScanner'
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/LabibaVIC/753-7.3D.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
@@ -27,7 +21,6 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
-
             post {
                 always {
                     junit '**/target/surefire-reports/*.xml'
@@ -47,7 +40,6 @@ pipeline {
             steps {
                 sh 'mvn org.owasp:dependency-check-maven:check'
             }
-
             post {
                 always {
                     archiveArtifacts artifacts: 'target/dependency-check-report.html', fingerprint: true
@@ -59,9 +51,10 @@ pipeline {
     post {
         failure {
             mail to: 'your@email.com',
-                 subject: "Build Failed in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "Check console output at ${env.BUILD_URL}"
+                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Check console output: ${env.BUILD_URL}"
         }
     }
 }
+
 
