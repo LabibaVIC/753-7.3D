@@ -32,15 +32,16 @@ pipeline {
             }
         }
 
-        stage('Code Quality') {
-            steps {
-                dir('smart-waste') {
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
-                    }
-                }
+     stage('Code Quality') {
+    steps {
+        dir('smart-waste') {
+            withSonarQubeEnv('MySonarQube') {
+                sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
             }
         }
+    }
+}
+
 
         stage('Security') {
             steps {
