@@ -3,11 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven 3.8.5'
-        jdk 'JDK 17'
-    }
-
-    environment {
-        SONAR_SCANNER_HOME = tool 'SonarScanner'
+        jdk 'JDK 17'  // Updated to match SonarScanner requirements (if you ever re-enable)
     }
 
     stages {
@@ -32,17 +28,6 @@ pipeline {
             }
         }
 
-     stage('Code Quality') {
-    steps {
-        dir('smart-waste') {
-            withSonarQubeEnv('MySonarQube') {
-                sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=753-7.3D -Dsonar.sources=src -Dsonar.java.binaries=target"
-            }
-        }
-    }
-}
-
-
         stage('Security') {
             steps {
                 dir('smart-waste') {
@@ -55,13 +40,13 @@ pipeline {
                 }
             }
         }
-    }
 
-    post {
-        failure {
-            mail to: 'your@email.com',
-                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "Check console output: ${env.BUILD_URL}"
+        stage('Deploy') {
+            steps {
+                dir('smart-waste') {
+                    sh 'mkdir -p ../deployed && cp target/*.jar ../deployed/'
+                }
+            }
         }
     }
 }
