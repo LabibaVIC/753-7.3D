@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         maven 'Maven 3.8.5'
-        jdk 'JDK 17'  // Updated to match SonarScanner requirements (if you ever re-enable)
+        jdk 'JDK 17'
     }
 
     stages {
@@ -28,6 +28,13 @@ pipeline {
             }
         }
 
+        stage('Code Quality') {
+            steps {
+                echo 'Code quality tools like Checkstyle would run here.'
+                // sh 'mvn checkstyle:checkstyle' // Uncomment if integrated
+            }
+        }
+
         stage('Security') {
             steps {
                 dir('smart-waste') {
@@ -41,12 +48,33 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Deployment') {
             steps {
-                dir('smart-waste') {
-                    sh 'mkdir -p ../deployed && cp target/*.jar ../deployed/'
-                }
+                echo 'Deploying the artifact to the staging server...'
+                sh 'echo "Simulated deployment step completed."'
             }
+        }
+
+        stage('Release') {
+            steps {
+                echo 'Releasing the build...'
+                sh 'echo "Simulated release: tagging and publishing successful."'
+            }
+        }
+
+        stage('Monitoring') {
+            steps {
+                echo 'Monitoring metrics and logs would be gathered here.'
+                sh 'echo "Simulated monitoring metrics collection."'
+            }
+        }
+    }
+
+    post {
+        failure {
+            mail to: 'your@email.com',
+                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Check console output: ${env.BUILD_URL}"
         }
     }
 }
